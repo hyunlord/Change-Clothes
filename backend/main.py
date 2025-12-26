@@ -110,7 +110,9 @@ async def analyze_images(
     person_segments = segmentation_processor.segment_person(person_pil, model_type=model_type)
     
     # Define Categories
-    body_labels = ["Hair", "Face", "Left-arm", "Right-arm", "Left-leg", "Right-leg"]
+    # Define Categories (normalized to lowercase for safety)
+    body_labels = {"hair", "face", "left-arm", "right-arm", "left-leg", "right-leg"}
+    # clothing_labels = ... (not strictly used for filter logic, everything else is clothing)
     clothing_labels = ["Hat", "Sunglasses", "Upper-clothes", "Skirt", "Pants", "Dress", "Belt", "Left-shoe", "Right-shoe", "Bag", "Scarf"]
 
     body_parts = []
@@ -123,7 +125,7 @@ async def analyze_images(
         
         item = {"label": label, "url": f"uploads/{filename}"}
         
-        if label in body_labels:
+        if label.lower() in body_labels:
             body_parts.append(item)
         else:
             # Default to clothing for anything else

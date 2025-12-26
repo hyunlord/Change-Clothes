@@ -21,8 +21,9 @@ class SegmentationProcessor:
 
         # Load B5 (Quality)
         print(" [3/7] Preloading Segformer B5 (Quality)...")
-        self.processors['b5'] = SegformerImageProcessor.from_pretrained("mattmdjaga/segformer_b5_clothes")
-        self.models['b5'] = SegformerForSemanticSegmentation.from_pretrained("mattmdjaga/segformer_b5_clothes")
+        # replaced invalid mattmdjaga b5 with matei-dorian/segformer-b5-finetuned-human-parsing
+        self.processors['b5'] = SegformerImageProcessor.from_pretrained("matei-dorian/segformer-b5-finetuned-human-parsing")
+        self.models['b5'] = SegformerForSemanticSegmentation.from_pretrained("matei-dorian/segformer-b5-finetuned-human-parsing")
         self.models['b5'].to(self.device)
 
         # Load SAM (Segment Anything)
@@ -95,14 +96,8 @@ class SegmentationProcessor:
         )
         pred_seg = upsampled_logits.argmax(dim=1)[0].numpy()
         
-        # Label Map for mattmdjaga/segformer_b2_clothes (Same for B5)
-        label_map = {
-            0: "Background", 1: "Hat", 2: "Hair", 3: "Sunglasses", 
-            4: "Upper-clothes", 5: "Skirt", 6: "Pants", 7: "Dress", 
-            8: "Belt", 9: "Left-shoe", 10: "Right-shoe", 11: "Face", 
-            12: "Left-leg", 13: "Right-leg", 14: "Left-arm", 15: "Right-arm", 
-            16: "Bag", 17: "Scarf"
-        }
+        # Dynamic Label Map from Model Config
+        id2label = model.config.id2label
         
         results = {}
         unique_labels = np.unique(pred_seg)
@@ -110,7 +105,8 @@ class SegmentationProcessor:
         for label_id in unique_labels:
             if label_id == 0: continue # Skip background
             
-            label_name = label_map.get(label_id, f"Unknown-{label_id}")
+            # Use dynamic label from config, fallback to Unknown
+            label_name = id2label.get(label_id, f"Unknown-{label_id}")
             
             # Binary mask for this label
             mask = (pred_seg == label_id).astype(np.uint8) * 255
