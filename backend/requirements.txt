@@ -11,3 +11,4 @@ pillow
 numpy
 scipy
 rembg[gpu]
+git+https://github.com/facebookresearch/segment-anything.git

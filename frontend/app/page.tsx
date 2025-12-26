@@ -5,6 +5,7 @@ import { useState } from 'react';
 export default function Home() {
   const [apiUrl, setApiUrl] = useState('http://localhost:8000');
   const [personImage, setPersonImage] = useState<File | null>(null);
+  const [modelType, setModelType] = useState('b2');
 
   // New State Structure
   const [analysisResult, setAnalysisResult] = useState<{
@@ -20,6 +21,7 @@ export default function Home() {
     setLoading(true);
     const formData = new FormData();
     formData.append('person_image', personImage);
+    formData.append('model_type', modelType);
 
     try {
       // Remove trailing slash if present
@@ -87,6 +89,25 @@ export default function Home() {
                 />
               </div>
             )}
+          </div>
+
+          {/* Model Selection */}
+          <div className="flex flex-col gap-4 bg-gray-800 p-6 rounded-xl border border-gray-700">
+            <label className="text-lg font-semibold flex items-center gap-2">
+              🧠 AI Model
+            </label>
+            <select
+              value={modelType}
+              onChange={(e) => setModelType(e.target.value)}
+              className="bg-gray-900 border border-gray-600 rounded-lg p-3 text-white focus:ring-2 focus:ring-violet-500 outline-none"
+            >
+              <option value="b2">Segformer B2 (⚡ Fast)</option>
+              <option value="b5">Segformer B5 (✨ High Quality)</option>
+              <option value="sam">Segment Anything (SAM) (🧩 All Regions)</option>
+            </select>
+            <p className="text-xs text-gray-400">
+              * B2/B5: Categorized (Clothes vs Body). SAM: All regions (Uncategorized).
+            </p>
           </div>
 
           <button
@@ -162,3 +183,4 @@ export default function Home() {
     </main>
   );
 }
+

@@ -89,7 +89,10 @@ async def startup_event():
 @app.post("/analyze")
 async def analyze_images(
     person_image: UploadFile = File(...),
+    model_type: str = Form("b2"),
 ):
+    print(f" [Request Received] Analyze Image Request. Model: {model_type}")
+    print(f"                  File: {person_image.filename}")
     from PIL import Image
     import uuid
 
@@ -104,7 +107,7 @@ async def analyze_images(
     person_pil = Image.open(person_path).convert("RGB")
     
     # Analyze Person (Segmentation)
-    person_segments = segmentation_processor.segment_person(person_pil)
+    person_segments = segmentation_processor.segment_person(person_pil, model_type=model_type)
     
     # Define Categories
     body_labels = ["Hair", "Face", "Left-arm", "Right-arm", "Left-leg", "Right-leg"]
