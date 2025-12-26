@@ -47,8 +47,10 @@ tunnel = ngrok.connect(8000)
 print(f"🚀 Server is running at: {tunnel.public_url}")
 
 # FastAPI 서버 실행
-nest_asyncio.apply()
-uvicorn.run("main:app", host="0.0.0.0", port=8000)
+# FastAPI 서버 실행
+config = uvicorn.Config("main:app", host="0.0.0.0", port=8000)
+server = uvicorn.Server(config)
+await server.serve()
 ```
 
 ## 3. 코드 업데이트 시
