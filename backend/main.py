@@ -74,5 +74,64 @@ async def try_on_image(
         "segmentation_model": segmentation_model
     }
 
+
+# Global Model Storage
+segmentation_processor = None
+
+@app.on_event("startup")
+async def startup_event():
+    print(" >>> Starting Model Initialization... (Please Wait) <<<")
+    global segmentation_processor
+    from app.models.segmentation.processor import SegmentationProcessor
+    segmentation_processor = SegmentationProcessor()
+    print(" >>> Segmentation Processor Ready! Server is up. <<<")
+
+@app.post("/analyze")
+async def analyze_images(
+    person_image: UploadFile = File(...),
+):
+    from PIL import Image
+    import uuid
+
+    # Save uploaded file
+    task_id = str(uuid.uuid4())[:8]
+    person_filename = f"{task_id}_person_{person_image.filename}"
+    person_path = os.path.join(UPLOAD_DIR, person_filename)
+    
+    with open(person_path, "wb") as buffer:
+        shutil.copyfileobj(person_image.file, buffer)
+        
+    person_pil = Image.open(person_path).convert("RGB")
+    
+    # Analyze Person (Segmentation)
+    person_segments = segmentation_processor.segment_person(person_pil)
+    
+    # Define Categories
+    body_labels = ["Hair", "Face", "Left-arm", "Right-arm", "Left-leg", "Right-leg"]
+    clothing_labels = ["Hat", "Sunglasses", "Upper-clothes", "Skirt", "Pants", "Dress", "Belt", "Left-shoe", "Right-shoe", "Bag", "Scarf"]
+
+    body_parts = []
+    clothing_items = []
+
+    for label, segment_img in person_segments.items():
+        filename = f"{task_id}_seg_{label}.png"
+        path = os.path.join(UPLOAD_DIR, filename)
+        segment_img.save(path, format="PNG")
+        
+        item = {"label": label, "url": f"uploads/{filename}"}
+        
+        if label in body_labels:
+            body_parts.append(item)
+        else:
+            # Default to clothing for anything else
+            clothing_items.append(item)
+    
+    return {
+        "status": "completed",
+        "person_original": f"uploads/{person_filename}",
+        "body_parts": body_parts,
+        "clothing_items": clothing_items
+    }
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

@@ -6,9 +6,8 @@ torchvision
 diffusers
 transformers
 accelerate
-opencv-python
+opencv-python-headless
 pillow
 numpy
 scipy
-rembg
-onnxruntime
+rembg[gpu]

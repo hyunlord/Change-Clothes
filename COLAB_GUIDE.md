@@ -56,8 +56,10 @@ await server.serve()
 ## 3. 코드 업데이트 시
 로컬에서 코드를 수정하고 GitHub에 Push한 뒤, Colab에서 위 셀을 다시 실행하면 최신 코드가 반영됩니다.
 
+> [!NOTE]
+> 처음 실행 시 **세그멘테이션 모델(Segformer)**을 다운로드하느라 서버 시작까지 1~2분이 소요될 수 있습니다. 터미널 로그에 "Segmentation Processor Ready"가 뜰 때까지 기다려주세요.
 
-## 3. 프론트엔드 연결
+## 4. 프론트엔드 연결
 1. Colab 실행 결과에 나온 `https://....ngrok-free.app` 주소를 복사합니다.
 2. 로컬에서 실행 중인 웹 페이지(`http://localhost:3000`)의 상단 **API URL** 입력창에 붙여넣습니다.
 3. 이제 이미지를 업로드하고 Try-On을 테스트합니다!
