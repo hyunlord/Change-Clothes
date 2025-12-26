@@ -91,8 +91,8 @@ async def analyze_images(
     person_image: UploadFile = File(...),
     model_type: str = Form("b2"),
 ):
-    print(f" [Request Received] Analyze Image Request. Model: {model_type}")
-    print(f"                  File: {person_image.filename}")
+    print(f" [Request Received] Analyze Image Request. Model: {model_type}", flush=True)
+    print(f"                  File: {person_image.filename}", flush=True)
     from PIL import Image
     import uuid
 
