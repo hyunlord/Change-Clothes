@@ -171,3 +171,97 @@ docker run --gpus all nvidia/cuda:11.8-base-ubuntu22.04 nvidia-smi
 - **Spot 인스턴스** 사용 (최대 80% 저렴)
 - 사용하지 않을 때 **Stop Pod** (볼륨은 유지)
 - 테스트 완료 후 **Terminate** (볼륨 삭제됨, 비용 0)
+
+---
+
+## API 테스트 방법
+
+서버가 실행된 후, 테스트 스크립트를 사용하여 API를 테스트할 수 있습니다.
+
+### 테스트 가능한 기능
+
+| 기능 | API | 비교 옵션 |
+|------|-----|-----------|
+| 이미지 분석 | `/analyze` | `b2` vs `b5` vs `sam` |
+| 가상 피팅 | `/try-on/image` | `sam3` vs `schp` |
+
+### 세그멘테이션 모델 비교
+
+| 모델 | 옵션 | 특징 |
+|------|------|------|
+| Segformer B2 | `b2` | 빠른 속도 |
+| Segformer B5 | `b5` | 높은 품질 |
+| Segment Anything | `sam` | 모든 영역 감지 |
+
+### 테스트 실행 방법
+
+#### 1. 새 터미널에서 테스트 (RunPod 내부)
+
+Docker가 실행 중인 상태에서 새 터미널을 열고:
+
+```bash
+cd /workspace/Change-Clothes/tests
+pip install -r requirements.txt
+
+# 서버 상태 확인
+python test_api.py --check-only
+
+# 이미지 분석 테스트 (테스트 이미지 필요)
+python test_api.py --image /path/to/person.jpg
+
+# 모델 벤치마크
+python benchmark_models.py --image /path/to/person.jpg
+```
+
+#### 2. 로컬 PC에서 테스트 (RunPod 서버 대상)
+
+로컬 PC에서 RunPod 서버를 대상으로 테스트:
+
+```bash
+cd tests
+pip install -r requirements.txt
+
+# RunPod URL로 테스트
+python test_api.py --url https://{POD_ID}-8000.proxy.runpod.net --image ./person.jpg
+
+# 벤치마크
+python benchmark_models.py --url https://{POD_ID}-8000.proxy.runpod.net --image ./person.jpg
+```
+
+#### 3. cURL로 간단 테스트
+
+```bash
+# 서버 상태 확인
+curl https://{POD_ID}-8000.proxy.runpod.net/
+
+# 이미지 분석 (B5 모델)
+curl -X POST https://{POD_ID}-8000.proxy.runpod.net/analyze \
+  -F "person_image=@./person.jpg" \
+  -F "model_type=b5"
+```
+
+### 테스트 출력 예시
+
+```
+============================================================
+ 세그멘테이션 모델 벤치마크
+============================================================
+모델     시간(초)    신체   의류   상태
+------------------------------------------------------------
+b2       2.15       4      2      OK
+b5       3.42       5      3      OK
+sam      5.18       8      0      OK
+------------------------------------------------------------
+ 가장 빠른 모델: B2 (2.15s)
+ 가장 상세한 모델: SAM (총 8개 영역)
+============================================================
+```
+
+### 테스트 이미지 준비
+
+테스트용 이미지는 직접 준비해야 합니다.
+
+권장 사양:
+- 해상도: 512x768 이상
+- 포맷: JPG, PNG
+- 조건: 전신, 정면, 단일 인물
