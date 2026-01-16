@@ -22,9 +22,28 @@ RunPod GPU 클라우드에서 Change-Clothes 프로젝트를 실행하는 방법
    - **Volume Disk**: 30GB 이상
    - **Expose HTTP Ports**: `3000, 8000` 추가
 
-### 2. Pod 접속 및 실행
+### 2. Pod 접속 및 Docker 설치
 
 Pod 시작 후 **Connect** → **Web Terminal** 또는 **SSH**로 접속:
+
+```bash
+# Docker 설치 확인
+docker --version
+
+# Docker가 없으면 설치
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
+
+# Docker Compose 설치
+pip install docker-compose
+
+# 또는 Docker Compose V2 플러그인 설치
+mkdir -p ~/.docker/cli-plugins
+curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
+chmod +x ~/.docker/cli-plugins/docker-compose
+```
+
+### 3. 프로젝트 클론 및 실행
 
 ```bash
 # 프로젝트 클론
@@ -32,11 +51,14 @@ cd /workspace
 git clone https://github.com/hyunlord/Change-Clothes.git
 cd Change-Clothes
 
-# Docker Compose 실행
+# Docker Compose 실행 (V1)
 docker-compose up --build
+
+# 또는 Docker Compose V2
+docker compose up --build
 ```
 
-### 3. 접속
+### 4. 접속
 
 RunPod 대시보드에서 **Connect** 버튼 클릭:
 
@@ -47,7 +69,7 @@ RunPod 대시보드에서 **Connect** 버튼 클릭:
 
 **프론트엔드 URL (포트 3000)** 로 접속하면 바로 사용할 수 있습니다!
 
-### 4. API URL 설정
+### 5. API URL 설정
 
 프론트엔드 페이지 상단의 **API URL** 입력창에 백엔드 URL 입력:
 ```
@@ -132,6 +154,26 @@ frontend:
 ---
 
 ## 문제 해결
+
+### Docker/Docker Compose가 없는 경우
+
+```bash
+# Docker 설치
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
+
+# Docker Compose 설치 (방법 1: pip)
+pip install docker-compose
+
+# Docker Compose 설치 (방법 2: 바이너리)
+mkdir -p ~/.docker/cli-plugins
+curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
+chmod +x ~/.docker/cli-plugins/docker-compose
+
+# 설치 확인
+docker --version
+docker-compose --version  # 또는 docker compose version
+```
 
 ### 포트가 노출되지 않는 경우
 
